@@ -1,64 +1,35 @@
-// This file contains JavaScript code for interactivity on the website.
-
-// Function to handle form submission in the contact section
-function handleFormSubmit(event) {
-    event.preventDefault(); // Prevent the default form submission behavior
-    const formData = new FormData(event.target); // Get form data
-    const data = Object.fromEntries(formData.entries()); // Convert form data to an object
-
-    // Here you can add code to send the data to a server or process it as needed
-    console.log('Form submitted:', data);
-}
-
-// Add event listener to the contact form
-document.addEventListener('DOMContentLoaded', () => {
-    const contactForm = document.querySelector('#contact-form'); // Select the contact form
-    if (contactForm) {
-        contactForm.addEventListener('submit', handleFormSubmit); // Attach submit event listener
-    }
-
-    // Smooth scrolling for navigation links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
-
-    // Highlight active nav link on scroll
-    const sections = document.querySelectorAll('section');
-    const navLinks = document.querySelectorAll('nav ul li a');
-    window.addEventListener('scroll', () => {
-        let current = '';
-        sections.forEach(section => {
-            const sectionTop = section.offsetTop - 80;
-            if (pageYOffset >= sectionTop) {
-                current = section.getAttribute('id');
-            }
-        });
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === `#${current}`) {
-                link.classList.add('active');
-            }
-        });
-    });
-
-    // Section entrance animation
-    const animatedSections = document.querySelectorAll('main section');
-    animatedSections.forEach(section => {
-        section.classList.add('section-animate');
-    });
-    function revealSectionsOnScroll() {
-        animatedSections.forEach(section => {
-            const rect = section.getBoundingClientRect();
-            if (rect.top < window.innerHeight - 80) {
-                section.classList.add('visible');
-            }
-        });
-    }
-    window.addEventListener('scroll', revealSectionsOnScroll);
-    revealSectionsOnScroll(); // Initial check
+'use strict';
+const year = document.querySelector('#year');
+if (year) year.textContent = String(new Date().getFullYear());
+const motionToggle = document.querySelector('#motion-toggle');
+motionToggle?.addEventListener('click', () => {
+  const paused = document.body.classList.toggle('motion-paused');
+  motionToggle.setAttribute('aria-pressed', String(paused));
+  motionToggle.textContent = paused ? 'Resume motion' : 'Pause motion';
 });
+const copyButton = document.querySelector('#copy-email');
+const copyStatus = document.querySelector('#copy-status');
+copyButton?.addEventListener('click', async () => {
+  try {
+    if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+    await navigator.clipboard.writeText('anuragkr@umich.edu');
+    copyStatus.textContent = 'Email copied to clipboard.';
+  } catch {
+    copyStatus.textContent = 'Email: anuragkr@umich.edu — select to copy, or use the email link.';
+  }
+});
+if ('IntersectionObserver' in window) {
+  const links = [...document.querySelectorAll('nav a[href^="#"]')];
+  const observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      for (const link of links) {
+        const active = link.getAttribute('href') === '#' + entry.target.id;
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      }
+    }
+  }, { rootMargin: '-10% 0px -65% 0px' });
+  document.querySelectorAll('main > section[id]').forEach(section => observer.observe(section));
+}
